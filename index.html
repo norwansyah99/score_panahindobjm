@@ -445,6 +445,12 @@ button {
 @media(max-width:700px){.logout-btn{position:static;margin-top:10px}}
 @media print{#loginGate,.logout-btn{display:none!important}}
 
+
+.category-select{width:100%;padding:12px 13px;border:1px solid #cbd5e1;border-radius:9px;font-size:15px;background:#fff}
+.archer-input-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.archer-input-row .form-group.category-group{min-width:240px}
+.rank-category{font-size:12px;color:#64748b;margin-top:3px}
+.print-category{font-size:13px;color:#555;margin-top:-4px;margin-bottom:8px}
 </style>
 </head>
 
@@ -539,6 +545,7 @@ button {
             <tr>
               <th>Peringkat</th>
               <th>Nama Pemanah</th>
+              <th>Kategori</th>
               <th>Score</th>
               <th>X</th>
               <th>10</th>
@@ -632,7 +639,8 @@ function saveAppState() {
       anakPanah: jumlahPanah || parseInt(document.getElementById("anakPanah")?.value) || 0,
       pemanahList: [...document.querySelectorAll(".archer-input-row")].map((row, index) => ({
         id: Number(row.dataset.id) || index + 1,
-        nama: row.querySelector(".archer-name")?.value || ""
+        nama: row.querySelector(".archer-name")?.value || "",
+        kategori: row.querySelector(".category-select")?.value || ""
       })),
       pemanah,
       archerCounter
@@ -662,16 +670,33 @@ function loadAppState() {
 
     const list = document.getElementById("archerList");
     list.innerHTML = "";
+
+    // Pulihkan hanya baris pemanah yang benar-benar berisi nama.
+    // Baris kosong dari versi lama tidak boleh dianggap sebagai pemanah tambahan.
+    const restoredList = Array.isArray(state.pemanahList) ? state.pemanahList : [];
+    const nonEmptyList = restoredList.filter(item => String(item?.nama || "").trim() !== "");
+
     archerCounter = 0;
-    (state.pemanahList || []).forEach(item => {
-      tambahPemanah(item.nama || "");
-    });
-    if (!document.querySelector(".archer-input-row")) tambahPemanah();
+    if (nonEmptyList.length > 0) {
+      nonEmptyList.forEach(item => {
+        tambahPemanah(item.nama || "", item.kategori || "");
+      });
+    } else {
+      // Kondisi awal: belum ada pemanah yang ditambahkan.
+      // Selalu tampilkan tepat satu kolom kosong dan jangan buat Pemanah 2.
+      tambahPemanah();
+    }
 
     jumlahRambahan = Number(state.rambahan) || 0;
     jumlahPanah = Number(state.anakPanah) || 0;
     pemanah = Array.isArray(state.pemanah) ? state.pemanah : [];
-    archerCounter = Math.max(Number(state.archerCounter) || 0, archerCounter);
+
+    // Jika tidak ada data skor/pemanah yang valid, buang data peserta lama
+    // agar refresh tidak memunculkan Pemanah 2 dari localStorage versi sebelumnya.
+    if (nonEmptyList.length === 0) {
+      pemanah = [];
+      localStorage.removeItem(SCORE_STORAGE_KEY);
+    }
 
     if (pemanah.length && jumlahRambahan > 0 && jumlahPanah > 0) {
       renderScoreCards();
@@ -691,19 +716,37 @@ function clearSavedAppState() {
   localStorage.removeItem(SCORE_STORAGE_KEY);
 }
 
-function tambahPemanah(nama = "") {
+function tambahPemanah(nama = "", kategori = "") {
   archerCounter++;
   const id = archerCounter;
   const row = document.createElement("div");
   row.className = "archer-input-row";
   row.dataset.id = id;
   row.innerHTML = `
-    <div class="form-group" style="flex:1;">
+    <div class="form-group" style="flex:1;min-width:240px;">
       <label>Pemanah ${id}</label>
       <input type="text" class="archer-name" placeholder="Nama pemanah" value="${escapeHtml(nama)}">
     </div>
+    <div class="form-group category-group">
+      <label>Kategori</label>
+      <select class="category-select">
+        <option value="">Pilih kategori</option>
+        <option value="SD Putra">SD Putra</option>
+        <option value="SD Putri">SD Putri</option>
+        <option value="SMP Putra">SMP Putra</option>
+        <option value="SMP Putri">SMP Putri</option>
+        <option value="SMA Putra">SMA Putra</option>
+        <option value="SMA Putri">SMA Putri</option>
+        <option value="Mahasiswa Putra">Mahasiswa Putra</option>
+        <option value="Mahasiswa Putri">Mahasiswa Putri</option>
+        <option value="Dewasa Putra">Dewasa Putra</option>
+        <option value="Dewasa Putri">Dewasa Putri</option>
+      </select>
+    </div>
     <button type="button" class="btn-danger btn-small" onclick="hapusPemanah(${id})">Hapus</button>
   `;
+  const categoryEl = row.querySelector(".category-select");
+  if (categoryEl) categoryEl.value = kategori || "";
   document.getElementById("archerList").appendChild(row);
   if (!isRestoringState) saveAppState();
 }
@@ -732,15 +775,21 @@ function buatScore() {
   if (!panah || panah < 1) return alert("Jumlah anak panah harus diisi.");
 
   const rows = [...document.querySelectorAll(".archer-input-row")];
-  const names = rows.map(r => r.querySelector(".archer-name").value.trim()).filter(Boolean);
+  const entries = rows.map(r => ({
+    nama: r.querySelector(".archer-name").value.trim(),
+    kategori: r.querySelector(".category-select")?.value || ""
+  })).filter(item => item.nama);
 
-  if (!names.length) return alert("Tambahkan minimal 1 nama pemanah.");
+  if (!entries.length) return alert("Tambahkan minimal 1 nama pemanah.");
+  const belumKategori = entries.filter(item => !item.kategori);
+  if (belumKategori.length) return alert("Pilih kategori untuk setiap pemanah terlebih dahulu.");
 
   jumlahRambahan = rambahan;
   jumlahPanah = panah;
-  pemanah = names.map((nama, index) => ({
+  pemanah = entries.map((entry, index) => ({
     id: index + 1,
-    nama,
+    nama: entry.nama,
+    kategori: entry.kategori,
     skor: Array.from({length: rambahan}, () => Array(panah).fill("")),
     total: 0,
     x: 0,
@@ -789,7 +838,10 @@ function renderScoreCards() {
     container.innerHTML += `
       <div class="card archer-score-card">
         <div class="archer-score-header">
-          <h3>${escapeHtml(p.nama)}</h3>
+          <div>
+            <h3>${escapeHtml(p.nama)}</h3>
+            <small class="rank-category">${escapeHtml(p.kategori || "Kategori belum dipilih")}</small>
+          </div>
           <span>Jarak: ${escapeHtml(document.getElementById("jarak").value)} ${escapeHtml(document.getElementById("satuanJarak").value)}</span>
         </div>
         ${rounds}
@@ -881,6 +933,7 @@ function renderRanking() {
     <tr>
       <td><b>${i+1}</b></td>
       <td>${escapeHtml(p.nama)}</td>
+      <td>${escapeHtml(p.kategori || "-")}</td>
       <td><b>${p.total}</b></td>
       <td>${p.x}</td>
       <td>${p.ten}</td>
@@ -919,9 +972,9 @@ function renderPrintReport() {
     <div class="print-section print-ranking">
       <h3>RANKING NILAI TERTINGGI → TERENDAH</h3>
       <table class="print-table">
-        <thead><tr><th>Rank</th><th class="left">Nama Pemanah</th><th>Total Score</th><th>X</th><th>10</th><th>Rata-rata</th></tr></thead>
+        <thead><tr><th>Rank</th><th class="left">Nama Pemanah</th><th>Kategori</th><th>Total Score</th><th>X</th><th>10</th><th>Rata-rata</th></tr></thead>
         <tbody>
-          ${ranking.map((p,i)=>`<tr class="${i===0?'champion':''}"><td>${i+1}</td><td class="left">${escapeHtml(p.nama)}</td><td><b>${p.total}</b></td><td>${p.x}</td><td>${p.ten}</td><td>${p.rata.toFixed(2)}</td></tr>`).join("")}
+          ${ranking.map((p,i)=>`<tr class="${i===0?'champion':''}"><td>${i+1}</td><td class="left">${escapeHtml(p.nama)}</td><td>${escapeHtml(p.kategori || "-")}</td><td><b>${p.total}</b></td><td>${p.x}</td><td>${p.ten}</td><td>${p.rata.toFixed(2)}</td></tr>`).join("")}
         </tbody>
       </table>
     </div>`;
@@ -941,6 +994,7 @@ function renderPrintReport() {
     html += `
       <div class="print-section">
         <h3>DETAIL PEMANAH — ${rankIndex+1}. ${escapeHtml(p.nama)}</h3>
+        <div class="print-category"><b>Kategori:</b> ${escapeHtml(p.kategori || "-")}</div>
         <div class="print-archer-title">Rincian Nilai per Rambahan</div>
         <table class="print-table">
           <thead><tr><th>Rambahan</th>${headers}<th>Total</th><th>X</th><th>10</th></tr></thead>
@@ -1000,6 +1054,7 @@ async function simpanKeGoogleSheets() {
     for (const p of pemanah) {
       const payload = {
         nama: p.nama,
+        kategori: p.kategori || "",
         jarak: document.getElementById("jarak").value || "",
         satuan: document.getElementById("satuanJarak").value || "Meter",
         rambahan: jumlahRambahan,
@@ -1059,10 +1114,10 @@ if (!loadAppState()) {
 
 // Simpan juga perubahan nama pemanah / pengaturan utama saat diketik atau diubah.
 document.addEventListener("input", function(e) {
-  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name")) saveAppState();
+  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name, .category-select")) saveAppState();
 });
 document.addEventListener("change", function(e) {
-  if (e.target.matches("#satuanJarak")) saveAppState();
+  if (e.target.matches("#satuanJarak, .category-select")) saveAppState();
 });
 
 window.addEventListener("beforeunload", saveAppState);
