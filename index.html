@@ -620,6 +620,76 @@ let jumlahRambahan = 0;
 let jumlahPanah = 0;
 let pemanah = [];
 let archerCounter = 0;
+let isRestoringState = false;
+const SCORE_STORAGE_KEY = "pib_score_panahan_state_v1";
+
+function saveAppState() {
+  try {
+    const state = {
+      jarak: document.getElementById("jarak")?.value || "",
+      satuanJarak: document.getElementById("satuanJarak")?.value || "Meter",
+      rambahan: jumlahRambahan || parseInt(document.getElementById("rambahan")?.value) || 0,
+      anakPanah: jumlahPanah || parseInt(document.getElementById("anakPanah")?.value) || 0,
+      pemanahList: [...document.querySelectorAll(".archer-input-row")].map((row, index) => ({
+        id: Number(row.dataset.id) || index + 1,
+        nama: row.querySelector(".archer-name")?.value || ""
+      })),
+      pemanah,
+      archerCounter
+    };
+    localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn("Gagal menyimpan data lokal:", e);
+  }
+}
+
+function loadAppState() {
+  try {
+    const raw = localStorage.getItem(SCORE_STORAGE_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+    if (!state) return false;
+    isRestoringState = true;
+
+    const jarakEl = document.getElementById("jarak");
+    const satuanEl = document.getElementById("satuanJarak");
+    const rambahanEl = document.getElementById("rambahan");
+    const panahEl = document.getElementById("anakPanah");
+    if (jarakEl) jarakEl.value = state.jarak || "";
+    if (satuanEl) satuanEl.value = state.satuanJarak || "Meter";
+    if (rambahanEl) rambahanEl.value = state.rambahan || "";
+    if (panahEl) panahEl.value = state.anakPanah || "";
+
+    const list = document.getElementById("archerList");
+    list.innerHTML = "";
+    archerCounter = 0;
+    (state.pemanahList || []).forEach(item => {
+      tambahPemanah(item.nama || "");
+    });
+    if (!document.querySelector(".archer-input-row")) tambahPemanah();
+
+    jumlahRambahan = Number(state.rambahan) || 0;
+    jumlahPanah = Number(state.anakPanah) || 0;
+    pemanah = Array.isArray(state.pemanah) ? state.pemanah : [];
+    archerCounter = Math.max(Number(state.archerCounter) || 0, archerCounter);
+
+    if (pemanah.length && jumlahRambahan > 0 && jumlahPanah > 0) {
+      renderScoreCards();
+      document.getElementById("scoreArea").classList.remove("hidden");
+      hitungSemua();
+    }
+    isRestoringState = false;
+    return Boolean(pemanah.length || (state.jarak || state.rambahan || state.anakPanah));
+  } catch (e) {
+    isRestoringState = false;
+    console.warn("Gagal memuat data lokal:", e);
+    return false;
+  }
+}
+
+function clearSavedAppState() {
+  localStorage.removeItem(SCORE_STORAGE_KEY);
+}
 
 function tambahPemanah(nama = "") {
   archerCounter++;
@@ -635,6 +705,7 @@ function tambahPemanah(nama = "") {
     <button type="button" class="btn-danger btn-small" onclick="hapusPemanah(${id})">Hapus</button>
   `;
   document.getElementById("archerList").appendChild(row);
+  if (!isRestoringState) saveAppState();
 }
 
 function escapeHtml(value) {
@@ -648,7 +719,7 @@ function escapeHtml(value) {
 
 function hapusPemanah(id) {
   const row = document.querySelector(`.archer-input-row[data-id="${id}"]`);
-  if (row) row.remove();
+  if (row) { row.remove(); saveAppState(); }
 }
 
 function buatScore() {
@@ -681,6 +752,7 @@ function buatScore() {
   document.getElementById("scoreArea").classList.remove("hidden");
   hitungSemua();
   document.getElementById("scoreArea").scrollIntoView({behavior:"smooth"});
+  saveAppState();
 }
 
 function renderScoreCards() {
@@ -750,6 +822,7 @@ function prosesInput(input) {
   pemanah[pi].skor[r][a] = input.value;
   hitungPemanah(pi);
   renderRanking();
+  saveAppState();
 }
 
 function hitungPemanah(pi) {
@@ -977,9 +1050,22 @@ function resetData() {
   jumlahRambahan = 0;
   jumlahPanah = 0;
   archerCounter = 0;
+  clearSavedAppState();
   tambahPemanah();
 }
-tambahPemanah();
+if (!loadAppState()) {
+  tambahPemanah();
+}
+
+// Simpan juga perubahan nama pemanah / pengaturan utama saat diketik atau diubah.
+document.addEventListener("input", function(e) {
+  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name")) saveAppState();
+});
+document.addEventListener("change", function(e) {
+  if (e.target.matches("#satuanJarak")) saveAppState();
+});
+
+window.addEventListener("beforeunload", saveAppState);
 </script>
 </body>
 </html>
