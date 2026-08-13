@@ -562,7 +562,7 @@ button {
       <button class="btn-primary" id="btnSimpan" onclick="simpanKeGoogleSheets()">☁️ Simpan ke Google Sheets</button>
       <button class="btn-print" onclick="cetakHasil()">🖨️ Cetak Hasil Terperinci</button>
     </div>
-    <div id="saveStatus" class="no-print" style="margin-top:10px;font-weight:bold;"></div>
+    <div id="saveStatus" class="no-print" style="margin-top:10px;font-weight:bold;"></div><div class="no-print" style="margin-top:6px;color:#64748b;font-size:12px;">Kategori setiap pemanah ikut tersimpan ke Google Sheets.</div>
   </div>
 </div></div>
 
@@ -671,31 +671,55 @@ function loadAppState() {
     const list = document.getElementById("archerList");
     list.innerHTML = "";
 
-    // Pulihkan hanya baris pemanah yang benar-benar berisi nama.
-    // Baris kosong dari versi lama tidak boleh dianggap sebagai pemanah tambahan.
+    // Pulihkan hanya pemanah yang benar-benar punya nama.
+    // Baris kosong dari versi lama/legacy diabaikan sepenuhnya.
     const restoredList = Array.isArray(state.pemanahList) ? state.pemanahList : [];
-    const nonEmptyList = restoredList.filter(item => String(item?.nama || "").trim() !== "");
+    const nonEmptyList = restoredList
+      .filter(item => String(item?.nama || "").trim() !== "")
+      .map(item => ({
+        nama: String(item.nama || "").trim(),
+        kategori: item.kategori || ""
+      }));
 
     archerCounter = 0;
     if (nonEmptyList.length > 0) {
-      nonEmptyList.forEach(item => {
-        tambahPemanah(item.nama || "", item.kategori || "");
-      });
+      nonEmptyList.forEach(item => tambahPemanah(item.nama, item.kategori));
     } else {
-      // Kondisi awal: belum ada pemanah yang ditambahkan.
-      // Selalu tampilkan tepat satu kolom kosong dan jangan buat Pemanah 2.
+      // Kondisi awal: belum ada pemanah.
+      // Tepat satu baris kosong, tidak pernah dua.
       tambahPemanah();
     }
 
     jumlahRambahan = Number(state.rambahan) || 0;
     jumlahPanah = Number(state.anakPanah) || 0;
-    pemanah = Array.isArray(state.pemanah) ? state.pemanah : [];
 
-    // Jika tidak ada data skor/pemanah yang valid, buang data peserta lama
-    // agar refresh tidak memunculkan Pemanah 2 dari localStorage versi sebelumnya.
+    // Pulihkan skor hanya untuk pemanah yang memang masih ada.
+    const savedScores = Array.isArray(state.pemanah) ? state.pemanah : [];
+    pemanah = nonEmptyList.map((item, index) => {
+      const oldP = savedScores[index] || {};
+      return {
+        id: index + 1,
+        nama: item.nama,
+        kategori: item.kategori,
+        skor: Array.from(
+          {length: jumlahRambahan},
+          (_, r) => Array.from(
+            {length: jumlahPanah},
+            (_, a) => String(oldP?.skor?.[r]?.[a] || "")
+          )
+        ),
+        total: Number(oldP.total) || 0,
+        x: Number(oldP.x) || 0,
+        ten: Number(oldP.ten) || 0,
+        rata: Number(oldP.rata) || 0
+      };
+    });
+
+    // Bila belum ada nama pemanah, bersihkan peserta lama.
     if (nonEmptyList.length === 0) {
       pemanah = [];
       localStorage.removeItem(SCORE_STORAGE_KEY);
+      saveAppState();
     }
 
     if (pemanah.length && jumlahRambahan > 0 && jumlahPanah > 0) {
@@ -762,7 +786,22 @@ function escapeHtml(value) {
 
 function hapusPemanah(id) {
   const row = document.querySelector(`.archer-input-row[data-id="${id}"]`);
-  if (row) { row.remove(); saveAppState(); }
+  if (!row) return;
+
+  row.remove();
+
+  // Renumber baris setelah penghapusan agar selalu berurutan.
+  [...document.querySelectorAll(".archer-input-row")].forEach((r, index) => {
+    const newId = index + 1;
+    r.dataset.id = newId;
+    const label = r.querySelector("label");
+    if (label) label.textContent = `Pemanah ${newId}`;
+    const btn = r.querySelector(".btn-danger");
+    if (btn) btn.setAttribute("onclick", `hapusPemanah(${newId})`);
+  });
+
+  archerCounter = document.querySelectorAll(".archer-input-row").length;
+  saveAppState();
 }
 
 function buatScore() {
