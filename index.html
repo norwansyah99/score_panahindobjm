@@ -533,6 +533,7 @@ button {
     </div>
 
     <h3 style="margin-top:18px;">Daftar Pemanah</h3>
+    <div class="ranking-note no-print" style="margin-top:4px;margin-bottom:10px;">Nomor peserta dapat diisi manual. Contoh: <b>PIB-001</b>, <b>SD-01</b>, atau nomor lomba Anda sendiri. Nama pemanah otomatis menggunakan HURUF KAPITAL.</div>
     <div id="archerList"></div>
 
     <div class="button-row">
@@ -599,7 +600,7 @@ button {
       <button class="btn-primary" id="btnSimpan" onclick="simpanKeGoogleSheets()">☁️ Simpan ke Google Sheets</button>
       <button class="btn-print" onclick="cetakHasil()">🖨️ Cetak Hasil Terperinci</button>
     </div>
-    <div id="saveStatus" class="no-print" style="margin-top:10px;font-weight:bold;"></div><div class="no-print" style="margin-top:6px;color:#64748b;font-size:12px;">Kategori setiap pemanah ikut tersimpan ke Google Sheets.</div>
+    <div id="saveStatus" class="no-print" style="margin-top:10px;font-weight:bold;"></div><div class="no-print" style="margin-top:6px;color:#64748b;font-size:12px;">Nomor peserta dan kategori ikut dikirim ke Google Sheets (kolom Apps Script perlu disiapkan untuk nomor peserta).</div>
   </div>
 </div></div>
 
@@ -677,7 +678,7 @@ function saveAppState() {
       pemanahList: [...document.querySelectorAll(".archer-input-row")].map((row, index) => ({
         id: Number(row.dataset.id) || index + 1,
         nomorPeserta: row.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`,
-        nama: row.querySelector(".archer-name")?.value || "",
+        nama: (row.querySelector(".archer-name")?.value || "").toUpperCase(),
         kategori: row.querySelector(".category-select")?.value || ""
       })),
       pemanah,
@@ -715,7 +716,7 @@ function loadAppState() {
     const nonEmptyList = restoredList
       .filter(item => String(item?.nama || "").trim() !== "")
       .map((item, index) => ({
-        nama: String(item.nama || "").trim(),
+        nama: String(item.nama || "").trim().toUpperCase(),
         kategori: item.kategori || "",
         nomorPeserta: item.nomorPeserta || `PIB-${String(index+1).padStart(3,"0")}`
       }));
@@ -790,11 +791,11 @@ function tambahPemanah(nama = "", kategori = "", nomorPeserta = "") {
   row.innerHTML = `
     <div class="form-group" style="flex:1;min-width:240px;">
       <label>Nomor Peserta</label>
-      <input type="text" class="participant-no" value="${escapeHtml(nomorPeserta || `PIB-${String(id).padStart(3,"0")}`)}" readonly>
+      <input type="text" class="participant-no" value="${escapeHtml(nomorPeserta || `PIB-${String(id).padStart(3,"0")}`)}" placeholder="Contoh: PIB-001">
     </div>
     <div class="form-group" style="flex:2;min-width:240px;">
       <label>Pemanah ${id}</label>
-      <input type="text" class="archer-name" placeholder="Nama pemanah" value="${escapeHtml(nama)}">
+      <input type="text" class="archer-name" placeholder="Nama pemanah" value="${escapeHtml(String(nama || "").toUpperCase())}" oninput="this.value=this.value.toUpperCase(); saveAppState();">
     </div>
     <div class="form-group category-group">
       <label>Kategori</label>
@@ -817,6 +818,8 @@ function tambahPemanah(nama = "", kategori = "", nomorPeserta = "") {
   const categoryEl = row.querySelector(".category-select");
   if (categoryEl) categoryEl.value = kategori || "";
   document.getElementById("archerList").appendChild(row);
+  const nameEl = row.querySelector(".archer-name");
+  if (nameEl) nameEl.value = String(nama || "").toUpperCase();
   if (!isRestoringState) saveAppState();
 }
 
@@ -835,14 +838,12 @@ function hapusPemanah(id) {
 
   row.remove();
 
-  // Renumber baris setelah penghapusan agar selalu berurutan.
+  // Renumber hanya ID internal/baris. Nomor Peserta manual tidak diubah.
   [...document.querySelectorAll(".archer-input-row")].forEach((r, index) => {
     const newId = index + 1;
     r.dataset.id = newId;
     const labels = r.querySelectorAll("label");
     if (labels[1]) labels[1].textContent = `Pemanah ${newId}`;
-    const no = r.querySelector(".participant-no");
-    if (no) no.value = `PIB-${String(newId).padStart(3,"0")}`;
     const btn = r.querySelector(".btn-danger");
     if (btn) btn.setAttribute("onclick", `hapusPemanah(${newId})`);
   });
@@ -863,7 +864,7 @@ function buatScore() {
   const rows = [...document.querySelectorAll(".archer-input-row")];
   const entries = rows.map((r, index) => ({
     nomorPeserta: r.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`,
-    nama: r.querySelector(".archer-name").value.trim(),
+    nama: r.querySelector(".archer-name").value.trim().toUpperCase(),
     kategori: r.querySelector(".category-select")?.value || ""
   })).filter(item => item.nama);
 
@@ -871,12 +872,15 @@ function buatScore() {
   const belumKategori = entries.filter(item => !item.kategori);
   if (belumKategori.length) return alert("Pilih kategori untuk setiap pemanah terlebih dahulu.");
 
+  const nomorDuplikat = entries.map(item => item.nomorPeserta.trim().toLowerCase()).filter((v,i,a)=>v && a.indexOf(v)!==i);
+  if (nomorDuplikat.length) return alert("Nomor peserta tidak boleh sama. Silakan periksa kembali nomor peserta.");
+
   jumlahRambahan = rambahan;
   jumlahPanah = panah;
   pemanah = entries.map((entry, index) => ({
     id: index + 1,
     nomorPeserta: entry.nomorPeserta,
-    nama: entry.nama,
+    nama: entry.nama.toUpperCase(),
     kategori: entry.kategori,
     skor: Array.from({length: rambahan}, () => Array(panah).fill("")),
     total: 0,
@@ -1166,6 +1170,7 @@ async function simpanKeGoogleSheets() {
     // text/plain dipakai agar request lintas domain tidak memerlukan preflight CORS.
     for (const p of pemanah) {
       const payload = {
+        nomorPeserta: p.nomorPeserta || "",
         nama: p.nama,
         kategori: p.kategori || "",
         jarak: document.getElementById("jarak").value || "",
@@ -1229,7 +1234,10 @@ if (!loadAppState()) {
 
 // Simpan juga perubahan nama pemanah / pengaturan utama saat diketik atau diubah.
 document.addEventListener("input", function(e) {
-  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name, .category-select")) saveAppState();
+  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name, .category-select")) {
+    if (e.target.matches(".archer-name")) e.target.value = e.target.value.toUpperCase();
+    saveAppState();
+  }
 });
 document.addEventListener("change", function(e) {
   if (e.target.matches("#satuanJarak, .category-select")) saveAppState();
