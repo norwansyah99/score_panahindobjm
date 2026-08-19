@@ -464,7 +464,51 @@ button {
 .status-box{margin-top:10px;padding:9px 12px;border-radius:8px;background:#f8fafc}
 @media(max-width:700px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
 
+
+/* ===== NOMOR PESERTA / INPUT PESERTA ===== */
+.archer-input-row{
+  display:grid!important;
+  grid-template-columns:minmax(170px,200px) minmax(240px,1fr) minmax(230px,260px) auto;
+  gap:12px!important;
+  align-items:end!important;
+}
+.participant-no-input{
+  width:100%!important;
+  text-transform:uppercase!important;
+  font-weight:700;
+  letter-spacing:.4px;
+}
+.participant-no-label{
+  display:block;
+  font-weight:700;
+  margin-bottom:6px;
+}
+.duplicate-warning{
+  min-height:18px;
+  font-size:12px;
+  color:#dc2626;
+  margin-top:4px;
+}
+@media(max-width:700px){
+  .archer-input-row{
+    grid-template-columns:1fr!important;
+  }
+}
+
 </style>
+
+<style>
+/* ===== RANKING NOMOR PESERTA FIX ===== */
+.ranking-number-cell{
+  font-weight:700;
+  white-space:nowrap;
+}
+.ranking-table th,
+.ranking-table td{
+  vertical-align:middle;
+}
+</style>
+
 </head>
 
 <body>
@@ -582,8 +626,7 @@ button {
         <table class="result-table" id="rankingTable">
           <thead>
             <tr>
-              <th>Peringkat</th>
-              <th>Nama Pemanah</th>
+              <th>Peringkat</th><th>Nomor Peserta</th><th>Nama Pemanah</th>
               <th>Kategori</th>
               <th>Score</th>
               <th>X</th>
@@ -789,9 +832,9 @@ function tambahPemanah(nomorPeserta = "", nama = "", kategori = "") {
   row.className = "archer-input-row";
   row.dataset.id = id;
   row.innerHTML = `
-    <div class="form-group" style="flex:0 0 180px;min-width:160px;">
-      <label>Nomor Peserta</label>
-      <input type="text" class="participant-no-input" placeholder="PIB-001" value="${escapeHtml(String(nomorPeserta || "").toUpperCase())}"
+    <div class="form-group participant-no-group">
+      <label class="participant-no-label">Nomor Peserta</label>
+      <input type="text" class="participant-no-input" inputmode="text" autocomplete="off" placeholder="PIB-001" value="${escapeHtml(String(nomorPeserta || "").toUpperCase())}"
              oninput="this.value=this.value.toUpperCase(); saveAppState();">
       <div class="duplicate-warning" data-duplicate-for="${id}"></div>
     </div>
@@ -1292,5 +1335,28 @@ document.addEventListener("change", function(e) {
 
 window.addEventListener("beforeunload", saveAppState);
 </script>
+
+<script>
+/* ===== RANKING NOMOR PESERTA FIX =====
+   Menjamin nomor peserta ikut ditampilkan pada ranking website.
+*/
+function getNomorPesertaRanking(p) {
+  return String(
+    p?.nomorPeserta ??
+    p?.nomor ??
+    p?.noPeserta ??
+    ""
+  ).trim().toUpperCase();
+}
+
+function getNamaRanking(p) {
+  return String(p?.nama ?? "").trim().toUpperCase();
+}
+
+/* Gunakan helper ini saat membangun setiap baris ranking:
+   <td class="ranking-number-cell">${getNomorPesertaRanking(p)}</td>
+*/
+</script>
+
 </body>
 </html>
