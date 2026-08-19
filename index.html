@@ -677,7 +677,7 @@ function saveAppState() {
       anakPanah: jumlahPanah || parseInt(document.getElementById("anakPanah")?.value) || 0,
       pemanahList: [...document.querySelectorAll(".archer-input-row")].map((row, index) => ({
         id: Number(row.dataset.id) || index + 1,
-        nomorPeserta: row.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`,
+        nomorPeserta: (row.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`).trim().toUpperCase(),
         nama: (row.querySelector(".archer-name")?.value || "").toUpperCase(),
         kategori: row.querySelector(".category-select")?.value || ""
       })),
@@ -718,7 +718,7 @@ function loadAppState() {
       .map((item, index) => ({
         nama: String(item.nama || "").trim().toUpperCase(),
         kategori: item.kategori || "",
-        nomorPeserta: item.nomorPeserta || `PIB-${String(index+1).padStart(3,"0")}`
+        nomorPeserta: String(item.nomorPeserta || `PIB-${String(index+1).padStart(3,"0")}`).trim().toUpperCase()
       }));
 
     archerCounter = 0;
@@ -739,7 +739,7 @@ function loadAppState() {
       const oldP = savedScores[index] || {};
       return {
         id: index + 1,
-        nomorPeserta: item.nomorPeserta || `PIB-${String(index+1).padStart(3,"0")}`,
+        nomorPeserta: String(item.nomorPeserta || `PIB-${String(index+1).padStart(3,"0")}`).trim().toUpperCase(),
         nama: item.nama,
         kategori: item.kategori,
         skor: Array.from(
@@ -791,7 +791,7 @@ function tambahPemanah(nama = "", kategori = "", nomorPeserta = "") {
   row.innerHTML = `
     <div class="form-group" style="flex:1;min-width:240px;">
       <label>Nomor Peserta</label>
-      <input type="text" class="participant-no" value="${escapeHtml(nomorPeserta || `PIB-${String(id).padStart(3,"0")}`)}" placeholder="Contoh: PIB-001">
+      <input type="text" class="participant-no" value="${escapeHtml(String(nomorPeserta || `PIB-${String(id).padStart(3,"0")}`).toUpperCase())}" placeholder="Contoh: PIB-001" oninput="this.value=this.value.toUpperCase(); saveAppState();">
     </div>
     <div class="form-group" style="flex:2;min-width:240px;">
       <label>Pemanah ${id}</label>
@@ -863,7 +863,7 @@ function buatScore() {
 
   const rows = [...document.querySelectorAll(".archer-input-row")];
   const entries = rows.map((r, index) => ({
-    nomorPeserta: r.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`,
+    nomorPeserta: (r.querySelector(".participant-no")?.value || `PIB-${String(index+1).padStart(3,"0")}`).trim().toUpperCase(),
     nama: r.querySelector(".archer-name").value.trim().toUpperCase(),
     kategori: r.querySelector(".category-select")?.value || ""
   })).filter(item => item.nama);
@@ -872,14 +872,19 @@ function buatScore() {
   const belumKategori = entries.filter(item => !item.kategori);
   if (belumKategori.length) return alert("Pilih kategori untuk setiap pemanah terlebih dahulu.");
 
-  const nomorDuplikat = entries.map(item => item.nomorPeserta.trim().toLowerCase()).filter((v,i,a)=>v && a.indexOf(v)!==i);
+  const nomorDuplikat = entries.map(item => item.nomorPeserta.trim().toUpperCase()).filter((v,i,a)=>v && a.indexOf(v)!==i);
   if (nomorDuplikat.length) return alert("Nomor peserta tidak boleh sama. Silakan periksa kembali nomor peserta.");
+
+  const namaDuplikat = entries
+    .map(item => item.nama.trim().toUpperCase())
+    .filter((v,i,a) => v && a.indexOf(v)!==i);
+  if (namaDuplikat.length) return alert("Nama pemanah tidak boleh sama dalam satu penginputan. Silakan periksa kembali nama peserta.");
 
   jumlahRambahan = rambahan;
   jumlahPanah = panah;
   pemanah = entries.map((entry, index) => ({
     id: index + 1,
-    nomorPeserta: entry.nomorPeserta,
+    nomorPeserta: String(entry.nomorPeserta || "").trim().toUpperCase(),
     nama: entry.nama.toUpperCase(),
     kategori: entry.kategori,
     skor: Array.from({length: rambahan}, () => Array(panah).fill("")),
@@ -1142,7 +1147,6 @@ async function simpanKeGoogleSheets() {
 
   hitungSemua();
 
-  // Pastikan semua nilai anak panah sudah diisi sebelum disimpan.
   const belumDiisi = [];
   pemanah.forEach((p) => {
     for (let r = 0; r < jumlahRambahan; r++) {
@@ -1159,39 +1163,66 @@ async function simpanKeGoogleSheets() {
     return;
   }
 
+  // Validasi lokal agar duplikat dalam satu pengiriman langsung ditolak.
+  const nomorSet = new Set();
+  const namaSet = new Set();
+  for (const p of pemanah) {
+    const nomor = String(p.nomorPeserta || "").trim().toUpperCase();
+    const nama = String(p.nama || "").trim().toUpperCase();
+
+    if (!nomor) {
+      alert(`Nomor peserta untuk ${nama || "peserta"} wajib diisi.`);
+      return;
+    }
+    if (nomorSet.has(nomor)) {
+      alert(`Nomor peserta ${nomor} terduplikasi. Silakan periksa kembali.`);
+      return;
+    }
+    nomorSet.add(nomor);
+
+    if (namaSet.has(nama)) {
+      alert(`Nama ${nama} terduplikasi. Silakan periksa kembali.`);
+      return;
+    }
+    namaSet.add(nama);
+  }
+
   const btn = document.getElementById("btnSimpan");
   const status = document.getElementById("saveStatus");
   btn.disabled = true;
   btn.style.opacity = "0.65";
-  status.textContent = "⏳ Menyimpan data ke Google Sheets...";
+  status.textContent = "⏳ Mengirim 1 paket data ke Google Sheets...";
+  status.style.color = "#1d4ed8";
 
   try {
-    // Kirim satu baris untuk setiap pemanah.
-    // text/plain dipakai agar request lintas domain tidak memerlukan preflight CORS.
-    for (const p of pemanah) {
-      const payload = {
-        nomorPeserta: p.nomorPeserta || "",
-        nama: p.nama,
-        kategori: p.kategori || "",
-        jarak: document.getElementById("jarak").value || "",
-        satuan: document.getElementById("satuanJarak").value || "Meter",
-        rambahan: jumlahRambahan,
-        anakPanah: jumlahPanah,
-        totalScore: p.total,
-        x: p.x,
-        sepulu: p.ten,
-        rataRata: Number(p.rata.toFixed(2))
-      };
+    const pesertaBatch = pemanah.map((p) => ({
+      nomorPeserta: String(p.nomorPeserta || "").trim().toUpperCase(),
+      nama: String(p.nama || "").trim().toUpperCase(),
+      kategori: p.kategori || "",
+      jarak: document.getElementById("jarak").value || "",
+      satuan: document.getElementById("satuanJarak").value || "Meter",
+      rambahan: jumlahRambahan,
+      anakPanah: jumlahPanah,
+      totalScore: p.total,
+      x: p.x,
+      sepulu: p.ten,
+      rataRata: Number(p.rata.toFixed(2))
+    }));
 
-      await fetch(GOOGLE_SHEETS_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-    }
+    // Satu request untuk seluruh peserta, bukan satu request per peserta.
+    // Ini memangkas waktu simpan saat peserta banyak.
+    await fetch(GOOGLE_SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "saveBatch",
+        pemanah: pesertaBatch
+      })
+    });
 
-    status.textContent = `✅ ${pemanah.length} pemanah berhasil dikirim ke Google Sheets.`;
+    status.textContent =
+      `✅ ${pemanah.length} pemanah dikirim dalam 1 paket. Nomor/nama yang sudah terdaftar akan ditolak oleh Apps Script.`;
     status.style.color = "#15803d";
     updateSaveStatus("OK");
   } catch (error) {
@@ -1234,8 +1265,10 @@ if (!loadAppState()) {
 
 // Simpan juga perubahan nama pemanah / pengaturan utama saat diketik atau diubah.
 document.addEventListener("input", function(e) {
-  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name, .category-select")) {
-    if (e.target.matches(".archer-name")) e.target.value = e.target.value.toUpperCase();
+  if (e.target.matches("#jarak, #rambahan, #anakPanah, .archer-name, .participant-no, .category-select")) {
+    if (e.target.matches(".archer-name, .participant-no")) {
+      e.target.value = e.target.value.toUpperCase();
+    }
     saveAppState();
   }
 });
