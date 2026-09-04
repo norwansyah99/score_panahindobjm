@@ -435,6 +435,11 @@ button {
 .login-field{text-align:left;margin-bottom:14px}
 .login-field label{display:block;margin-bottom:6px}
 .login-field input{width:100%;padding:13px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px}
+.login-password-wrap{position:relative;display:flex;align-items:center}
+.login-password-wrap input{padding-right:92px}
+.login-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:1px solid #cbd5e1;background:#f8fafc;color:#334155;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:1;min-height:34px}
+.login-password-toggle:hover{background:#e2e8f0}
+@media(max-width:700px){.login-password-toggle{min-height:36px;padding:8px 10px;font-size:12px}}
 .login-btn{width:100%;border:0;border-radius:10px;padding:13px 16px;font-size:16px;font-weight:700;cursor:pointer;background:#b30000;color:#fff}
 .login-btn:hover{background:#8f0000}
 .login-error{min-height:22px;margin:10px 0 0;color:#dc2626;font-weight:700;font-size:14px}
@@ -802,8 +807,14 @@ button {
 
     <div class="login-field">
       <label for="loginPassword">Password</label>
-      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Masukkan password"
-             onkeydown="if(event.key==='Enter') loginUser()">
+      <div class="login-password-wrap">
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Masukkan password"
+               onkeydown="if(event.key==='Enter') loginUser()">
+        <button id="loginPasswordToggle" class="login-password-toggle" type="button"
+                onclick="toggleLoginPassword()" aria-label="Tampilkan password" aria-pressed="false">
+          👁 Tampilkan
+        </button>
+      </div>
     </div>
 
     <button class="login-btn" type="button" onclick="loginUser()">🔐 MASUK</button>
@@ -939,6 +950,18 @@ button {
 // ============================================================
 const LOGIN_USERNAME = "admin";
 const LOGIN_PASSWORD = "banjarmasin123";
+
+function toggleLoginPassword(){
+  const input = document.getElementById("loginPassword");
+  const button = document.getElementById("loginPasswordToggle");
+  if(!input || !button) return;
+
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  button.innerHTML = isHidden ? "🙈 Sembunyikan" : "👁 Tampilkan";
+  button.setAttribute("aria-label", isHidden ? "Sembunyikan password" : "Tampilkan password");
+  button.setAttribute("aria-pressed", isHidden ? "true" : "false");
+}
 
 function loginUser(){
   const username = document.getElementById("loginUsername").value.trim();
