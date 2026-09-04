@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Sistem penghitungan score panahan untuk Panah Indonesia Banjarmasin">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Score Panahan">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 
 <title>Score Panahan</title>
 
@@ -487,6 +496,7 @@ button {
   display:block;
   font-weight:700;
   margin-bottom:6px;
+  margin-right:8px;
 }
 .duplicate-warning{
   min-height:18px;
@@ -1148,7 +1158,7 @@ function tambahPemanah(nomorPeserta = "", nama = "", kategori = "") {
   row.dataset.id = id;
   row.innerHTML = `
     <div class="form-group participant-no-group">
-      <label class="participant-no-label">Nomor Peserta</label>
+      <label class="participant-no-label">No. Peserta</label>
       <input type="text" class="participant-no-input" inputmode="text" autocomplete="off" placeholder="PIB-001" value="${escapeHtml(String(nomorPeserta || "").toUpperCase())}"
              oninput="this.value=this.value.toUpperCase(); saveAppState();">
       <div class="duplicate-warning" data-duplicate-for="${id}"></div>
@@ -2059,5 +2069,70 @@ function getNamaRanking(p) {
 */
 </script>
 
+<script>
+// PWA: aktifkan Service Worker agar aplikasi dapat di-install dan digunakan offline.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .catch(function (error) { console.warn('Service Worker gagal didaftarkan:', error); });
+  });
+}
+</script>
 </body>
 </html>
+<style>
+/* ===== V11: FORM PEMANAH LEBIH RAPI ===== */
+.match-settings-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+.match-settings-grid .form-group{min-width:0}
+.match-settings-grid input,.match-settings-grid select{min-height:42px}
+
+.archer-input-row{
+  grid-template-columns:100px minmax(180px,1fr) 150px 70px!important;
+  gap:8px!important;
+  padding:8px!important;
+  margin-bottom:7px!important;
+  align-items:end!important;
+}
+.archer-input-row .form-group{min-width:0!important;margin:0!important}
+.archer-input-row label{font-size:12px!important;margin-bottom:4px!important;white-space:nowrap}
+.archer-input-row .participant-no-label{margin-right:8px!important}
+.archer-input-row input,.archer-input-row select{height:40px!important;padding:8px 10px!important;font-size:14px!important}
+.archer-input-row .category-group{min-width:0!important}
+.archer-input-row .btn-small{height:40px!important;padding:8px 10px!important;font-size:13px!important}
+.archer-input-row .duplicate-warning{min-height:0!important;height:0!important;margin:0!important;overflow:visible;font-size:10px}
+
+@media(max-width:700px){
+  .match-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .match-settings-grid .form-group label{font-size:12px;margin-bottom:4px}
+  .match-settings-grid input,.match-settings-grid select{min-height:40px;height:40px;padding:8px 9px;font-size:14px}
+  .archer-input-row{
+    grid-template-columns:62px minmax(0,1fr) 98px 42px!important;
+    gap:5px!important;
+    padding:6px!important;
+    margin-bottom:5px!important;
+    border-radius:8px!important;
+  }
+  .archer-input-row label{font-size:10px!important;margin-bottom:3px!important}
+  .archer-input-row .participant-no-label{margin-right:5px!important}
+  .archer-input-row input,.archer-input-row select{height:36px!important;padding:6px 7px!important;font-size:13px!important;border-radius:7px!important}
+  .archer-input-row .btn-small{height:36px!important;width:42px!important;padding:5px!important;font-size:0!important}
+  .archer-input-row .btn-small::before{content:'🗑';font-size:15px}
+  #archerList{margin-top:4px}
+  .card h3[style]{margin-top:12px!important;margin-bottom:7px!important}
+  .button-row{gap:7px!important;margin-top:9px!important}
+  .button-row button{padding:10px 12px!important;font-size:13px!important}
+}
+@media(max-width:380px){
+  .archer-input-row{grid-template-columns:55px minmax(0,1fr) 88px 38px!important}
+  .archer-input-row input,.archer-input-row select{font-size:12px!important;padding-left:6px!important;padding-right:6px!important}
+  .archer-input-row .btn-small{width:38px!important}
+  .match-settings-grid input,.match-settings-grid select{font-size:13px}
+}
+</style>
+<script>
+// V10: tandai grid data pertandingan tanpa mengubah struktur/logic aplikasi.
+document.addEventListener('DOMContentLoaded', function(){
+  const grids = document.querySelectorAll('.card.no-print .form-grid');
+  if (grids.length) grids[0].classList.add('match-settings-grid');
+});
+</script>
