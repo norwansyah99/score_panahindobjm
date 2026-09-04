@@ -509,6 +509,160 @@ button {
 }
 </style>
 
+
+<style>
+/* ===== EDIT DATA PEMANAH LANGSUNG DARI TABEL SCORING ===== */
+.score-meta-input,
+.score-meta-select{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  background:#fff;
+  padding:7px 8px;
+  font-size:12px;
+}
+.score-meta-input:focus,
+.score-meta-select:focus{
+  outline:2px solid rgba(59,130,246,.25);
+  border-color:#3b82f6;
+}
+.score-number-edit{width:120px;min-width:120px;text-align:center;font-weight:700;text-transform:uppercase}
+.score-name-edit{width:190px;min-width:190px;font-weight:700;text-transform:uppercase}
+.score-category-edit{width:190px;min-width:190px;margin-top:5px}
+.score-name-cell{min-width:205px}
+.score-number-cell{min-width:130px}
+
+/* ===== TABEL SCORING PEMANAH: 1 PEMANAH = 1 BARIS ===== */
+.score-table-toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+  padding:10px 12px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+}
+.score-table-toolbar b{font-size:15px}
+.score-table-note{display:block;color:#64748b;font-size:12px;margin-top:3px}
+.score-table-legend{display:flex;gap:10px;flex-wrap:wrap;color:#64748b;font-size:12px;text-align:right}
+.score-table-legend span{background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:5px 8px}
+.score-table-wrap{
+  width:100%;
+  overflow:auto;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  max-height:72vh;
+  background:#fff;
+}
+.score-input-table{
+  width:max-content;
+  min-width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+}
+.score-input-table th,
+.score-input-table td{
+  border-right:1px solid #cbd5e1;
+  border-bottom:1px solid #cbd5e1;
+  text-align:center;
+  padding:5px;
+  white-space:nowrap;
+}
+.score-input-table thead th{
+  background:#0f172a;
+  color:#fff;
+  font-weight:700;
+  position:sticky;
+  top:0;
+  z-index:4;
+}
+.score-input-table thead tr:nth-child(2) th{
+  background:#334155;
+  font-size:10px;
+  top:31px;
+  z-index:4;
+}
+.score-input-table tbody tr:nth-child(even) td{background:#f8fafc}
+.score-input-table tbody tr:hover td{background:#fff7ed}
+.score-fixed{
+  position:sticky;
+  z-index:5;
+  background:#fff;
+}
+.score-input-table thead .score-fixed{z-index:7;background:#0f172a}
+.score-input-table tbody tr:nth-child(even) .score-fixed{background:#f8fafc}
+.score-input-table tbody tr:hover .score-fixed{background:#fff7ed}
+.score-number-head,
+.score-number-cell{left:0;min-width:130px;width:130px}
+.score-name-head,
+.score-name-cell{left:130px;min-width:205px;width:205px}
+.score-name-cell{text-align:left!important}
+.score-name{font-weight:800;color:#0f172a;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.score-category{font-size:10px;color:#64748b;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.score-round-head{min-width:calc(46px * 2);border-left:1px solid #64748b}
+.score-arrow-head{min-width:46px;width:46px}
+.score-subtotal-head{min-width:48px;width:48px;background:#475569!important}
+.score-input-cell{min-width:46px;width:46px}
+.score-table-input{
+  width:40px!important;
+  height:34px;
+  padding:4px 2px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:6px!important;
+  text-align:center!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  background:#fff!important;
+}
+.score-table-input:focus{
+  outline:2px solid #2563eb;
+  outline-offset:1px;
+  border-color:#2563eb!important;
+}
+.score-round-total-cell{
+  min-width:48px;
+  width:48px;
+  background:#f1f5f9!important;
+  font-weight:800;
+  color:#334155;
+}
+.score-summary-head{min-width:70px;width:70px;background:#7c3aed!important}
+.score-summary-cell{min-width:70px;width:70px;font-weight:800;font-size:13px;background:#f8fafc}
+.score-mobile-note{
+  margin-top:8px;
+  color:#64748b;
+  font-size:11px;
+  text-align:center;
+}
+@media(max-width:900px){
+  .score-table-toolbar{align-items:flex-start;flex-direction:column}
+  .score-table-legend{text-align:left}
+  .score-table-wrap{max-height:68vh}
+}
+@media(max-width:700px){
+  .score-table-wrap{max-height:none}
+  .score-input-table{font-size:11px}
+  .score-number-head,
+  .score-number-cell{min-width:64px;width:64px}
+  .score-name-head,
+  .score-name-cell{left:64px;min-width:150px;width:150px}
+  .score-name{max-width:140px}
+  .score-category{max-width:140px}
+  .score-input-cell{min-width:42px;width:42px;padding:4px 2px!important}
+  .score-table-input{width:36px!important;height:32px;font-size:14px!important}
+  .score-arrow-head{min-width:42px;width:42px}
+  .score-round-total-cell{min-width:44px;width:44px}
+  .score-summary-head,
+  .score-summary-cell{min-width:62px;width:62px}
+  .score-input-table thead tr:nth-child(2) th{top:31px}
+}
+</style>
+
 </head>
 
 <body>
@@ -918,14 +1072,11 @@ function buatScore() {
   const belumKategori = entries.filter(item => !item.kategori);
   if (belumKategori.length) return alert("Pilih kategori untuk setiap pemanah terlebih dahulu.");
 
-  const nomorSet = new Set();
+  // NOMOR PESERTA BOLEH DUPLIKAT. Validasi duplikat nomor sengaja dinonaktifkan.
   const namaSet = new Set();
   for (const item of entries) {
-    const nomorKey = item.nomorPeserta.toUpperCase();
     const namaKey = item.nama.toUpperCase();
-    if (nomorSet.has(nomorKey)) return alert(`Nomor peserta ${item.nomorPeserta} duplikat dalam input.`);
     if (namaSet.has(namaKey)) return alert(`Nama pemanah ${item.nama} duplikat dalam input.`);
-    nomorSet.add(nomorKey);
     namaSet.add(namaKey);
   }
 
@@ -954,52 +1105,168 @@ function renderScoreCards() {
   const container = document.getElementById("scoreCards");
   container.innerHTML = "";
 
+  const jarak = document.getElementById("jarak")?.value || "-";
+  const satuan = document.getElementById("satuanJarak")?.value || "";
+
+  let headerRounds = "";
+  let headerArrows = "";
+
+  for (let r = 0; r < jumlahRambahan; r++) {
+    headerRounds += `<th class="score-round-head" colspan="${jumlahPanah + 1}">Rambahan ${r + 1}</th>`;
+    for (let a = 0; a < jumlahPanah; a++) {
+      headerArrows += `<th class="score-arrow-head">P${a + 1}</th>`;
+    }
+    headerArrows += `<th class="score-subtotal-head">Σ</th>`;
+  }
+
+  let rows = "";
   pemanah.forEach((p, pi) => {
-    let rounds = "";
+    let scoreCells = "";
+
     for (let r = 0; r < jumlahRambahan; r++) {
-      let arrows = "";
       for (let a = 0; a < jumlahPanah; a++) {
-        arrows += `
-          <div class="arrow-box">
-            <label>Panah ${a+1}</label>
-            <input class="arrow-score" type="text" inputmode="text"
+        scoreCells += `
+          <td class="score-input-cell">
+            <input class="arrow-score score-table-input" type="text" inputmode="text"
               maxlength="2" data-pemanah="${pi}" data-round="${r}"
               data-arrow="${a}" placeholder="0"
+              aria-label="${escapeHtml(p.nama)} Rambahan ${r + 1} Panah ${a + 1}"
               value="${escapeHtml(p.skor[r][a])}"
-              oninput="prosesInput(this)">
-          </div>`;
+              oninput="prosesInput(this)"
+              onkeydown="pindahInputScore(event,this)">
+          </td>`;
       }
-      rounds += `
-        <div class="round-card">
-          <div class="round-title">Rambahan ${r+1}</div>
-          <div class="arrow-grid">${arrows}</div>
-          <div class="round-total">
-            Total: <span id="rt-${pi}-${r}">0</span>
-            &nbsp;|&nbsp; X: <span id="rx-${pi}-${r}">0</span>
-            &nbsp;|&nbsp; 10: <span id="r10-${pi}-${r}">0</span>
-          </div>
-        </div>`;
+
+      scoreCells += `
+        <td class="score-round-total-cell">
+          <span id="rt-${pi}-${r}">0</span>
+        </td>`;
     }
 
-    container.innerHTML += `
-      <div class="card archer-score-card">
-        <div class="archer-score-header">
-          <div>
-            <h3>${escapeHtml(p.nama)}</h3>
-            <small><b>${escapeHtml(p.nomorPeserta || "-")}</b></small>
-            <small class="rank-category">${escapeHtml(p.kategori || "Kategori belum dipilih")}</small>
-          </div>
-          <span>Jarak: ${escapeHtml(document.getElementById("jarak").value)} ${escapeHtml(document.getElementById("satuanJarak").value)}</span>
-        </div>
-        ${rounds}
-        <div class="score-summary compact-summary">
-          <div class="summary-box"><div class="summary-title">Total Score</div><div class="summary-number" id="total-${pi}">0</div></div>
-          <div class="summary-box"><div class="summary-title">Total X</div><div class="summary-number" id="x-${pi}">0</div></div>
-          <div class="summary-box"><div class="summary-title">Total 10</div><div class="summary-number" id="ten-${pi}">0</div></div>
-          <div class="summary-box"><div class="summary-title">Rata-rata</div><div class="summary-number" id="avg-${pi}">0</div></div>
-        </div>
-      </div>`;
+    rows += `
+      <tr class="score-archer-row">
+        <td class="score-fixed score-number-cell">
+          <input class="score-meta-input score-number-edit" type="text" inputmode="text"
+            value="${escapeHtml(p.nomorPeserta || "")}" placeholder="No. peserta"
+            data-pemanah-index="${pi}" data-meta-field="nomorPeserta"
+            oninput="ubahDataPemanahDariTabel(this)">
+        </td>
+        <td class="score-fixed score-name-cell">
+          <input class="score-meta-input score-name-edit" type="text"
+            value="${escapeHtml(p.nama || "")}" placeholder="Nama pemanah"
+            data-pemanah-index="${pi}" data-meta-field="nama"
+            oninput="ubahDataPemanahDariTabel(this)">
+          <select class="score-meta-select score-category-edit"
+            data-pemanah-index="${pi}" data-meta-field="kategori"
+            onchange="ubahDataPemanahDariTabel(this)">
+            <option value="">Pilih kategori</option>
+            <option value="SD Putra">SD Putra</option>
+            <option value="SD Putri">SD Putri</option>
+            <option value="SMP Putra">SMP Putra</option>
+            <option value="SMP Putri">SMP Putri</option>
+            <option value="SMA Putra">SMA Putra</option>
+            <option value="SMA Putri">SMA Putri</option>
+            <option value="Mahasiswa Putra">Mahasiswa Putra</option>
+            <option value="Mahasiswa Putri">Mahasiswa Putri</option>
+            <option value="Dewasa Putra">Dewasa Putra</option>
+            <option value="Dewasa Putri">Dewasa Putri</option>
+          </select>
+        </td>
+        ${scoreCells}
+        <td class="score-summary-cell"><span id="total-${pi}">0</span></td>
+        <td class="score-summary-cell"><span id="x-${pi}">0</span></td>
+        <td class="score-summary-cell"><span id="ten-${pi}">0</span></td>
+        <td class="score-summary-cell"><span id="avg-${pi}">0</span></td>
+      </tr>`;
   });
+
+  const colCount = 2 + (jumlahRambahan * (jumlahPanah + 1)) + 4;
+
+  container.innerHTML = `
+    <div class="score-table-toolbar">
+      <div>
+        <b>Input nilai semua pemanah</b>
+        <span style="display:block;color:#64748b;font-size:11px;margin-top:3px;">Nomor peserta, nama, dan kategori bisa diedit langsung di tabel.</span>
+        <span class="score-table-note">Jarak: ${escapeHtml(jarak)} ${escapeHtml(satuan)}</span>
+      </div>
+      <div class="score-table-legend">
+        <span>Isi 0–10 atau X</span>
+        <span>Enter = lanjut ke nilai berikutnya</span>
+      </div>
+    </div>
+
+    <div class="score-table-wrap">
+      <table class="score-input-table" style="--score-col-count:${colCount}">
+        <thead>
+          <tr>
+            <th class="score-fixed score-number-head" rowspan="2">No.</th>
+            <th class="score-fixed score-name-head" rowspan="2">Pemanah</th>
+            ${headerRounds}
+            <th class="score-summary-head" rowspan="2">Score</th>
+            <th class="score-summary-head" rowspan="2">X</th>
+            <th class="score-summary-head" rowspan="2">10</th>
+            <th class="score-summary-head" rowspan="2">Rata-rata</th>
+          </tr>
+          <tr>
+            ${headerArrows}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="score-mobile-note">
+      Geser <b>ke samping</b> bila kolom rambahan belum terlihat. Data tiap pemanah tetap berada dalam <b>satu baris</b>.
+    </div>`;
+
+  container.querySelectorAll(".score-category-edit").forEach((select) => {
+    const index = Number(select.dataset.pemanahIndex);
+    select.value = pemanah[index]?.kategori || "";
+  });
+}
+
+function pindahInputScore(event, input) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+
+  const inputs = [...document.querySelectorAll(".score-input-table .score-table-input")];
+  const index = inputs.indexOf(input);
+  if (index === -1) return;
+
+  const next = inputs[index + 1];
+  if (next) {
+    next.focus();
+    next.select();
+  }
+}
+
+function ubahDataPemanahDariTabel(input) {
+  const index = Number(input.dataset.pemanahIndex);
+  const field = input.dataset.metaField;
+  if (!Number.isInteger(index) || !pemanah[index] || !field) return;
+
+  let value = String(input.value || "").trim();
+  if (field === "nomorPeserta" || field === "nama") {
+    value = value.toUpperCase();
+    input.value = value;
+  }
+
+  pemanah[index][field] = value;
+
+  // Sinkronkan juga ke form daftar pemanah di bagian atas.
+  const formRows = [...document.querySelectorAll(".archer-input-row")];
+  const row = formRows[index];
+  if (row) {
+    const selector = field === "nomorPeserta" ? ".participant-no-input"
+      : field === "nama" ? ".archer-name"
+      : ".category-select";
+    const target = row.querySelector(selector);
+    if (target && target.value !== value) target.value = value;
+  }
+
+  saveAppState();
+  updateDashboard();
+  renderRanking();
 }
 
 function prosesInput(input) {
@@ -1206,8 +1473,7 @@ async function simpanKeGoogleSheets() {
     return;
   }
 
-  // Cegah duplikat dalam satu pengiriman.
-  const nomorSet = new Set();
+  // NOMOR PESERTA BOLEH DUPLIKAT. Hanya nama yang tetap dicek agar tidak sama.
   const namaSet = new Set();
   for (const p of pemanah) {
     const nomor = String(p.nomorPeserta || "").trim().toUpperCase();
@@ -1220,15 +1486,10 @@ async function simpanKeGoogleSheets() {
       alert("Ada nama pemanah yang kosong.");
       return;
     }
-    if (nomorSet.has(nomor)) {
-      alert(`Nomor peserta ${nomor} duplikat dalam penginputan.`);
-      return;
-    }
     if (namaSet.has(nama)) {
       alert(`Nama pemanah ${nama} duplikat dalam penginputan.`);
       return;
     }
-    nomorSet.add(nomor);
     namaSet.add(nama);
   }
 
@@ -1320,16 +1581,41 @@ updateDashboard();
 
 // Simpan juga perubahan nama pemanah / pengaturan utama saat diketik atau diubah.
 document.addEventListener("input", function(e) {
-  if (e.target.matches("#jarak, #rambahan, #anakPanah, .participant-no-input, .archer-name, .category-select")) {
+  if (e.target.matches("#jarak, #rambahan, #anakPanah, .participant-no-input, .archer-name")) {
     if (e.target.matches(".participant-no-input, .archer-name")) e.target.value = e.target.value.toUpperCase();
+
+    // Bila form atas diubah setelah scoring dibuat, sinkronkan tanpa menghapus skor.
+    if (e.target.matches(".participant-no-input, .archer-name")) {
+      const rows = [...document.querySelectorAll(".archer-input-row")];
+      const index = rows.indexOf(e.target.closest(".archer-input-row"));
+      if (index >= 0 && pemanah[index]) {
+        const field = e.target.matches(".participant-no-input") ? "nomorPeserta" : "nama";
+        pemanah[index][field] = String(e.target.value || "").trim().toUpperCase();
+        const tableSelector = field === "nomorPeserta" ? ".score-number-edit" : ".score-name-edit";
+        const tableInput = document.querySelector(`${tableSelector}[data-pemanah-index="${index}"]`);
+        if (tableInput && tableInput.value !== pemanah[index][field]) tableInput.value = pemanah[index][field];
+      }
+    }
+
     saveAppState();
     updateDashboard();
+    if (pemanah.length) renderRanking();
   }
 });
 document.addEventListener("change", function(e) {
   if (e.target.matches("#satuanJarak, .category-select")) {
+    if (e.target.matches(".category-select")) {
+      const rows = [...document.querySelectorAll(".archer-input-row")];
+      const index = rows.indexOf(e.target.closest(".archer-input-row"));
+      if (index >= 0 && pemanah[index]) {
+        pemanah[index].kategori = e.target.value || "";
+        const tableSelect = document.querySelector(`.score-category-edit[data-pemanah-index="${index}"]`);
+        if (tableSelect && tableSelect.value !== pemanah[index].kategori) tableSelect.value = pemanah[index].kategori;
+      }
+    }
     saveAppState();
     updateDashboard();
+    if (pemanah.length) renderRanking();
   }
 });
 
