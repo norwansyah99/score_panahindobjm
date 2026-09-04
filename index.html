@@ -552,11 +552,43 @@ button {
 .score-table-legend span{background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:5px 8px}
 .score-table-wrap{
   width:100%;
-  overflow:auto;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
   border:1px solid #cbd5e1;
   border-radius:10px;
   max-height:72vh;
   background:#fff;
+  position:relative;
+}
+.score-table-wrap.is-dragging{cursor:grabbing}
+.score-table-scroll-tools{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin:-2px 0 8px;
+}
+.score-table-scroll-tools button{
+  min-width:44px;
+  min-height:40px;
+  padding:8px 12px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  color:#0f172a;
+  border-radius:8px;
+  font-size:18px;
+  line-height:1;
+}
+.score-table-scroll-tools .scroll-hint{
+  flex:1;
+  text-align:center;
+  color:#64748b;
+  font-size:11px;
 }
 .score-input-table{
   width:max-content;
@@ -645,7 +677,17 @@ button {
   .score-table-wrap{max-height:68vh}
 }
 @media(max-width:700px){
-  .score-table-wrap{max-height:none}
+  .score-table-scroll-tools{display:flex}
+  .score-table-wrap{
+    width:100%;
+    max-width:100%;
+    max-height:none;
+    overflow-x:scroll !important;
+    overflow-y:visible !important;
+    scrollbar-width:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .score-input-table{width:max-content !important; min-width:860px}
   .score-input-table{font-size:11px}
   .score-number-head,
   .score-number-cell{min-width:64px;width:64px}
@@ -1195,7 +1237,12 @@ function renderScoreCards() {
       </div>
     </div>
 
-    <div class="score-table-wrap">
+    <div class="score-table-scroll-tools" aria-label="Kontrol geser tabel scoring">
+      <button type="button" onclick="geserTabelScoring(-1)" aria-label="Geser ke kiri">◀</button>
+      <div class="scroll-hint">Geser tabel ke kiri/kanan untuk melihat semua nilai</div>
+      <button type="button" onclick="geserTabelScoring(1)" aria-label="Geser ke kanan">▶</button>
+    </div>
+    <div class="score-table-wrap" id="scoreTableWrap">
       <table class="score-input-table" style="--score-col-count:${colCount}">
         <thead>
           <tr>
@@ -1219,10 +1266,53 @@ function renderScoreCards() {
       Geser <b>ke samping</b> bila kolom rambahan belum terlihat. Data tiap pemanah tetap berada dalam <b>satu baris</b>.
     </div>`;
 
+  aktifkanDragTabelScoring();
+
   container.querySelectorAll(".score-category-edit").forEach((select) => {
     const index = Number(select.dataset.pemanahIndex);
     select.value = pemanah[index]?.kategori || "";
   });
+}
+
+function geserTabelScoring(direction) {
+  const wrap = document.getElementById("scoreTableWrap");
+  if (!wrap) return;
+  const step = Math.max(180, Math.round(wrap.clientWidth * 0.72));
+  wrap.scrollBy({ left: direction * step, behavior: "smooth" });
+}
+
+function aktifkanDragTabelScoring() {
+  const wrap = document.getElementById("scoreTableWrap");
+  if (!wrap || wrap.dataset.dragReady === "1") return;
+  wrap.dataset.dragReady = "1";
+
+  let dragging = false;
+  let startX = 0;
+  let startScroll = 0;
+
+  wrap.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target && e.target.closest("input,select,button")) return;
+    dragging = true;
+    startX = e.clientX;
+    startScroll = wrap.scrollLeft;
+    wrap.classList.add("is-dragging");
+    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+
+  wrap.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    wrap.scrollLeft = startScroll - (e.clientX - startX);
+  });
+
+  const stop = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    wrap.classList.remove("is-dragging");
+    try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  wrap.addEventListener("pointerup", stop);
+  wrap.addEventListener("pointercancel", stop);
 }
 
 function pindahInputScore(event, input) {
