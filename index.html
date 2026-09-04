@@ -558,7 +558,7 @@ button {
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-x:contain;
-  touch-action:pan-x pan-y;
+  touch-action:auto;
   border:1px solid #cbd5e1;
   border-radius:10px;
   max-height:72vh;
@@ -679,15 +679,27 @@ button {
 @media(max-width:700px){
   .score-table-scroll-tools{display:flex}
   .score-table-wrap{
-    width:100%;
-    max-width:100%;
-    max-height:none;
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    max-height:none !important;
     overflow-x:scroll !important;
-    overflow-y:visible !important;
+    overflow-y:hidden !important;
     scrollbar-width:auto;
     -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    overscroll-behavior-x:contain;
+    -webkit-user-select:none;
+    user-select:none;
   }
-  .score-input-table{width:max-content !important; min-width:860px}
+  /* HP: kunci identitas pemanah di kiri agar tetap terlihat saat skor digeser. */
+  .score-fixed{position:sticky !important; left:auto; z-index:6 !important;}
+  .score-number-cell,.score-number-head{left:0 !important;}
+  .score-name-cell,.score-name-head{left:64px !important;}
+  .score-input-table thead .score-fixed{z-index:9 !important;}
+  .score-input-table tbody .score-fixed{z-index:6 !important;}
+  .score-input-table{display:table !important; width:1400px !important; min-width:1400px !important; max-width:none !important;}
   .score-input-table{font-size:11px}
   .score-number-head,
   .score-number-cell{min-width:64px;width:64px}
@@ -695,6 +707,12 @@ button {
   .score-name-cell{left:64px;min-width:150px;width:150px}
   .score-name{max-width:140px}
   .score-category{max-width:140px}
+  .score-number-cell,.score-name-cell{box-shadow:2px 0 4px rgba(15,23,42,.10);}
+  .score-input-table thead .score-name-head{box-shadow:2px 0 4px rgba(0,0,0,.18);}
+  .score-input-table tbody .score-number-cell,
+  .score-input-table tbody .score-name-cell{background:#fff;}
+  .score-input-table tbody tr:nth-child(even) .score-number-cell,
+  .score-input-table tbody tr:nth-child(even) .score-name-cell{background:#f8fafc;}
   .score-input-cell{min-width:42px;width:42px;padding:4px 2px!important}
   .score-table-input{width:36px!important;height:32px;font-size:14px!important}
   .score-arrow-head{min-width:42px;width:42px}
@@ -702,6 +720,68 @@ button {
   .score-summary-head,
   .score-summary-cell{min-width:62px;width:62px}
   .score-input-table thead tr:nth-child(2) th{top:31px}
+}
+
+/* ===== MOBILE SCORING V5: TANPA HORIZONTAL SCROLL ===== */
+.mobile-score-panel{display:none}
+@media(max-width:700px){
+  /* Di HP gunakan mode satu pemanah per layar. Tidak perlu menggeser tabel ke samping. */
+  .score-table-scroll-tools,
+  .score-table-wrap,
+  .score-mobile-note{display:none !important}
+  .mobile-score-panel{
+    display:block;
+    border:1px solid #dbe3ee;
+    border-radius:14px;
+    background:#fff;
+    overflow:hidden;
+  }
+  .mobile-archer-switcher{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px;
+    background:#0f172a;
+    color:#fff;
+  }
+  .mobile-archer-title{flex:1;min-width:0;text-align:center}
+  .mobile-archer-title span{display:block;font-size:11px;opacity:.75}
+  .mobile-archer-title strong{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .mobile-nav-btn{
+    width:42px;height:42px;border:1px solid rgba(255,255,255,.3);border-radius:9px;
+    background:#fff;color:#0f172a;font-size:27px;line-height:1;flex:0 0 auto
+  }
+  .mobile-nav-btn:disabled{opacity:.35}
+  .mobile-identity-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+  .mobile-identity-grid label{font-size:10px;font-weight:700;color:#475569}
+  .mobile-name-field{grid-column:1 / -1}
+  .mobile-name-input{text-transform:uppercase;font-weight:700}
+  .mobile-identity-grid input,.mobile-identity-grid select{margin-top:4px!important}
+  .mobile-rounds-title{padding:10px 10px 5px;font-size:11px;font-weight:800;color:#475569}
+  .mobile-round-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 10px 10px}
+  .mobile-round-tab{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:800;color:#334155}
+  .mobile-round-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+  .mobile-current-round{margin:0 10px 10px;border:1px solid #dbe3ee;border-radius:11px;overflow:hidden}
+  .mobile-current-round-title{font-weight:800;font-size:13px;padding:8px 10px;background:#f1f5f9;color:#0f172a}
+  .mobile-arrow-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:8px}
+  .mobile-arrow-item{min-width:0;text-align:center}
+  .mobile-arrow-item span{display:block;font-size:9px;color:#64748b;margin-bottom:3px}
+  .mobile-score-input{width:100%!important;min-width:0!important;height:42px!important;padding:3px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;text-align:center!important;font-size:18px!important;font-weight:900!important;background:#fff!important;box-sizing:border-box!important}
+  .mobile-score-input:focus{outline:2px solid #2563eb!important;border-color:#2563eb!important}
+  .mobile-round-result{text-align:right;padding:7px 10px;background:#f8fafc;font-size:11px;color:#475569;border-top:1px solid #e2e8f0}
+  .mobile-score-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 10px 10px}
+  .mobile-score-summary div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 3px;text-align:center}
+  .mobile-score-summary small{display:block;font-size:8px;color:#64748b}
+  .mobile-score-summary b{display:block;font-size:15px;margin-top:2px}
+  .mobile-score-footer{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px}
+  .mobile-score-footer button{border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:9px 6px;font-size:11px;font-weight:800;color:#334155}
+  .mobile-score-footer button:disabled{opacity:.4}
+}
+@media(max-width:380px){
+  .mobile-arrow-grid{gap:4px;padding:6px}
+  .mobile-score-input{height:38px!important;font-size:16px!important}
+  .mobile-identity-grid{grid-template-columns:1fr 1fr}
+  .mobile-score-footer button{font-size:10px}
 }
 </style>
 
@@ -1021,6 +1101,22 @@ function clearSavedAppState() {
   localStorage.removeItem(SCORE_STORAGE_KEY);
 }
 
+function buatSkorKosong(rambahan, panah) {
+  return Array.from({length: rambahan}, () => Array(panah).fill(""));
+}
+
+function salinSkorLama(oldP, rambahan, panah) {
+  const skorBaru = buatSkorKosong(rambahan, panah);
+  if (!oldP || !Array.isArray(oldP.skor)) return skorBaru;
+  for (let r = 0; r < Math.min(rambahan, oldP.skor.length); r++) {
+    if (!Array.isArray(oldP.skor[r])) continue;
+    for (let a = 0; a < Math.min(panah, oldP.skor[r].length); a++) {
+      skorBaru[r][a] = String(oldP.skor[r][a] || "");
+    }
+  }
+  return skorBaru;
+}
+
 function tambahPemanah(nomorPeserta = "", nama = "", kategori = "") {
   archerCounter++;
   const id = archerCounter;
@@ -1060,6 +1156,24 @@ function tambahPemanah(nomorPeserta = "", nama = "", kategori = "") {
   const categoryEl = row.querySelector(".category-select");
   if (categoryEl) categoryEl.value = kategori || "";
   document.getElementById("archerList").appendChild(row);
+
+  // Jika scoring sudah dibuat, pemanah baru langsung ditambahkan ke data scoring
+  // tanpa menyentuh/menghapus skor pemanah yang sudah ada.
+  if (!isRestoringState && jumlahRambahan > 0 && jumlahPanah > 0) {
+    const newIndex = pemanah.length;
+    pemanah.push({
+      id: newIndex + 1,
+      nomorPeserta: String(nomorPeserta || "").trim().toUpperCase(),
+      nama: String(nama || "").trim().toUpperCase(),
+      kategori: kategori || "",
+      skor: buatSkorKosong(jumlahRambahan, jumlahPanah),
+      total: 0, x: 0, ten: 0, rata: 0
+    });
+    renderScoreCards();
+    hitungSemua();
+    document.getElementById("scoreArea")?.classList.remove("hidden");
+  }
+
   if (!isRestoringState) saveAppState();
   updateDashboard();
 }
@@ -1122,19 +1236,26 @@ function buatScore() {
     namaSet.add(namaKey);
   }
 
+  // JANGAN reset skor lama saat tombol "Buat Score Semua Pemanah" ditekan.
+  // Skor dipertahankan berdasarkan posisi pemanah yang sama; bila jumlah
+  // rambahan/panah berubah, bagian skor yang masih tersedia tetap dipertahankan.
+  const skorLama = Array.isArray(pemanah) ? pemanah : [];
   jumlahRambahan = rambahan;
   jumlahPanah = panah;
-  pemanah = entries.map((entry, index) => ({
-    id: index + 1,
-    nomorPeserta: entry.nomorPeserta,
-    nama: entry.nama,
-    kategori: entry.kategori,
-    skor: Array.from({length: rambahan}, () => Array(panah).fill("")),
-    total: 0,
-    x: 0,
-    ten: 0,
-    rata: 0
-  }));
+  pemanah = entries.map((entry, index) => {
+    const oldP = skorLama[index];
+    return {
+      id: index + 1,
+      nomorPeserta: entry.nomorPeserta,
+      nama: entry.nama,
+      kategori: entry.kategori,
+      skor: salinSkorLama(oldP, rambahan, panah),
+      total: Number(oldP?.total) || 0,
+      x: Number(oldP?.x) || 0,
+      ten: Number(oldP?.ten) || 0,
+      rata: Number(oldP?.rata) || 0
+    };
+  });
 
   renderScoreCards();
   document.getElementById("scoreArea").classList.remove("hidden");
@@ -1237,6 +1358,8 @@ function renderScoreCards() {
       </div>
     </div>
 
+    <div class="mobile-score-panel" id="mobileScorePanel"></div>
+
     <div class="score-table-scroll-tools" aria-label="Kontrol geser tabel scoring">
       <button type="button" onclick="geserTabelScoring(-1)" aria-label="Geser ke kiri">◀</button>
       <div class="scroll-hint">Geser tabel ke kiri/kanan untuk melihat semua nilai</div>
@@ -1272,6 +1395,7 @@ function renderScoreCards() {
     const index = Number(select.dataset.pemanahIndex);
     select.value = pemanah[index]?.kategori || "";
   });
+  renderMobileScoring();
 }
 
 function geserTabelScoring(direction) {
@@ -1286,33 +1410,211 @@ function aktifkanDragTabelScoring() {
   if (!wrap || wrap.dataset.dragReady === "1") return;
   wrap.dataset.dragReady = "1";
 
-  let dragging = false;
+  let pointerId = null;
   let startX = 0;
   let startScroll = 0;
+  let moved = false;
 
   wrap.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    if (e.target && e.target.closest("input,select,button")) return;
-    dragging = true;
+    if (e.target.closest("input, select, button, textarea")) return;
+    pointerId = e.pointerId;
     startX = e.clientX;
     startScroll = wrap.scrollLeft;
-    wrap.classList.add("is-dragging");
-    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
-  });
+    moved = false;
+  }, {passive:true});
 
   wrap.addEventListener("pointermove", (e) => {
-    if (!dragging) return;
-    wrap.scrollLeft = startScroll - (e.clientX - startX);
-  });
+    if (pointerId !== e.pointerId) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) < 5) return;
+    moved = true;
+    wrap.scrollLeft = startScroll - dx;
+    wrap.classList.add("is-dragging");
+  }, {passive:true});
 
   const stop = (e) => {
-    if (!dragging) return;
-    dragging = false;
+    if (pointerId !== e.pointerId) return;
+    pointerId = null;
     wrap.classList.remove("is-dragging");
-    try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
   };
-  wrap.addEventListener("pointerup", stop);
-  wrap.addEventListener("pointercancel", stop);
+  wrap.addEventListener("pointerup", stop, {passive:true});
+  wrap.addEventListener("pointercancel", stop, {passive:true});
+
+  // Fallback touch handler untuk Android/WebView yang tidak meneruskan swipe
+  // horizontal dengan konsisten saat tabel memiliki kolom sticky.
+  let touchX = 0;
+  let touchScroll = 0;
+  let touchActive = false;
+  let touchHorizontal = false;
+
+  wrap.addEventListener("touchstart", (e) => {
+    if (!e.touches || !e.touches.length) return;
+    if (e.target.closest("input, select, button, textarea")) return;
+    touchX = e.touches[0].clientX;
+    touchScroll = wrap.scrollLeft;
+    touchActive = true;
+    touchHorizontal = false;
+  }, {passive:true});
+
+  wrap.addEventListener("touchmove", (e) => {
+    if (!touchActive || !e.touches || !e.touches.length) return;
+    const dx = e.touches[0].clientX - touchX;
+    if (!touchHorizontal && Math.abs(dx) < 8) return;
+    touchHorizontal = true;
+    wrap.scrollLeft = touchScroll - dx;
+    wrap.classList.add("is-dragging");
+    if (e.cancelable) e.preventDefault();
+  }, {passive:false});
+
+  const endTouch = () => {
+    touchActive = false;
+    touchHorizontal = false;
+    wrap.classList.remove("is-dragging");
+  };
+  wrap.addEventListener("touchend", endTouch, {passive:true});
+  wrap.addEventListener("touchcancel", endTouch, {passive:true});
+}
+
+let mobileScoreArcher = 0;
+let mobileScoreRound = 0;
+
+function renderMobileScoring() {
+  const panel = document.getElementById("mobileScorePanel");
+  if (!panel || !pemanah.length) return;
+
+  if (mobileScoreArcher >= pemanah.length) mobileScoreArcher = pemanah.length - 1;
+  if (mobileScoreArcher < 0) mobileScoreArcher = 0;
+  if (mobileScoreRound >= jumlahRambahan) mobileScoreRound = jumlahRambahan - 1;
+  if (mobileScoreRound < 0) mobileScoreRound = 0;
+
+  const p = pemanah[mobileScoreArcher];
+  let arrowHtml = "";
+  for (let a = 0; a < jumlahPanah; a++) {
+    const val = p.skor[mobileScoreRound]?.[a] || "";
+    arrowHtml += `
+      <label class="mobile-arrow-item">
+        <span>Panah ${a + 1}</span>
+        <input class="arrow-score mobile-score-input" type="text" inputmode="text" autocomplete="off"
+          maxlength="2" data-pemanah="${mobileScoreArcher}" data-round="${mobileScoreRound}"
+          data-arrow="${a}" placeholder="0" value="${escapeHtml(val)}"
+          aria-label="${escapeHtml(p.nama)} Rambahan ${mobileScoreRound + 1} Panah ${a + 1}"
+          oninput="prosesInput(this)" onkeydown="pindahInputMobileScore(event,this)">
+      </label>`;
+  }
+
+  let roundTabs = "";
+  for (let r = 0; r < jumlahRambahan; r++) {
+    roundTabs += `<button type="button" class="mobile-round-tab ${r === mobileScoreRound ? "active" : ""}" onclick="pilihMobileRambahan(${r})">R${r + 1}</button>`;
+  }
+
+  panel.innerHTML = `
+    <div class="mobile-archer-switcher">
+      <button type="button" class="mobile-nav-btn" onclick="pindahMobilePemanah(-1)" ${mobileScoreArcher === 0 ? "disabled" : ""}>‹</button>
+      <div class="mobile-archer-title">
+        <span>Pemanah ${mobileScoreArcher + 1} dari ${pemanah.length}</span>
+        <strong>${escapeHtml(p.nama || "Tanpa Nama")}</strong>
+      </div>
+      <button type="button" class="mobile-nav-btn" onclick="pindahMobilePemanah(1)" ${mobileScoreArcher === pemanah.length - 1 ? "disabled" : ""}>›</button>
+    </div>
+
+    <div class="mobile-identity-grid">
+      <label class="mobile-name-field">Nama Pemanah
+        <input class="score-meta-input mobile-name-input" type="text" value="${escapeHtml(p.nama || "")}" placeholder="Nama pemanah" data-pemanah-index="${mobileScoreArcher}" data-meta-field="nama" oninput="ubahDataPemanahDariTabel(this)">
+      </label>
+      <label>No. Peserta
+        <input class="score-meta-input" type="text" value="${escapeHtml(p.nomorPeserta || "")}" placeholder="Nomor peserta" data-pemanah-index="${mobileScoreArcher}" data-meta-field="nomorPeserta" oninput="ubahDataPemanahDariTabel(this)">
+      </label>
+      <label>Kategori
+        <select class="score-meta-select" data-pemanah-index="${mobileScoreArcher}" data-meta-field="kategori" onchange="ubahDataPemanahDariTabel(this)">
+          <option value="">Pilih kategori</option>
+          <option value="SD Putra">SD Putra</option><option value="SD Putri">SD Putri</option>
+          <option value="SMP Putra">SMP Putra</option><option value="SMP Putri">SMP Putri</option>
+          <option value="SMA Putra">SMA Putra</option><option value="SMA Putri">SMA Putri</option>
+          <option value="Mahasiswa Putra">Mahasiswa Putra</option><option value="Mahasiswa Putri">Mahasiswa Putri</option>
+          <option value="Dewasa Putra">Dewasa Putra</option><option value="Dewasa Putri">Dewasa Putri</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mobile-rounds-title">Pilih Rambahan</div>
+    <div class="mobile-round-tabs">${roundTabs}</div>
+
+    <div class="mobile-current-round">
+      <div class="mobile-current-round-title">Rambahan ${mobileScoreRound + 1}</div>
+      <div class="mobile-arrow-grid">${arrowHtml}</div>
+      <div class="mobile-round-result">Total rambahan: <b id="mobile-rt-${mobileScoreArcher}-${mobileScoreRound}">${hitungTotalRambahan(p, mobileScoreRound)}</b></div>
+    </div>
+
+    <div class="mobile-score-summary">
+      <div><small>Total Score</small><b id="mobile-total-${mobileScoreArcher}">${p.total || 0}</b></div>
+      <div><small>X</small><b id="mobile-x-${mobileScoreArcher}">${p.x || 0}</b></div>
+      <div><small>10</small><b id="mobile-ten-${mobileScoreArcher}">${p.ten || 0}</b></div>
+      <div><small>Rata-rata</small><b id="mobile-avg-${mobileScoreArcher}">${Number(p.rata || 0).toFixed(2)}</b></div>
+    </div>
+
+    <div class="mobile-score-footer">
+      <button type="button" onclick="pindahMobilePemanah(-1)" ${mobileScoreArcher === 0 ? "disabled" : ""}>← Pemanah Sebelumnya</button>
+      <button type="button" onclick="pindahMobilePemanah(1)" ${mobileScoreArcher === pemanah.length - 1 ? "disabled" : ""}>Pemanah Berikutnya →</button>
+    </div>`;
+
+  const cat = panel.querySelector("select[data-meta-field='kategori']");
+  if (cat) cat.value = p.kategori || "";
+}
+
+function hitungTotalRambahan(p, r) {
+  if (!p || !p.skor || !p.skor[r]) return 0;
+  return p.skor[r].reduce((sum, v) => sum + (String(v).toUpperCase() === "X" ? 10 : (parseInt(v) || 0)), 0);
+}
+
+function pilihMobileRambahan(r) {
+  mobileScoreRound = Number(r) || 0;
+  renderMobileScoring();
+}
+
+function pindahMobilePemanah(dir) {
+  mobileScoreArcher = Math.max(0, Math.min(pemanah.length - 1, mobileScoreArcher + Number(dir)));
+  // Rambahan yang sedang dipilih TETAP dipertahankan saat pindah pemanah.
+  renderMobileScoring();
+  const first = document.querySelector("#mobileScorePanel .mobile-score-input");
+  if (first) setTimeout(() => first.focus(), 80);
+}
+
+function pindahInputMobileScore(event, input) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+
+  const inputs = [...document.querySelectorAll("#mobileScorePanel .mobile-score-input")];
+  const index = inputs.indexOf(input);
+
+  // Selama belum di panah terakhir: pindah ke panah berikutnya
+  // pada pemanah yang sama.
+  if (index >= 0 && index < inputs.length - 1) {
+    inputs[index + 1].focus();
+    inputs[index + 1].select();
+    return;
+  }
+
+  // Panah terakhir pada rambahan ini selesai.
+  // Enter langsung pindah ke PEMANAH BERIKUTNYA, tetap pada rambahan
+  // yang sama. Ini membuat operator bisa mengisi R1 semua pemanah,
+  // lalu memilih R2 dan mengulang alur yang sama.
+  if (mobileScoreArcher + 1 < pemanah.length) {
+    mobileScoreArcher++;
+    renderMobileScoring();
+    const next = document.querySelector("#mobileScorePanel .mobile-score-input");
+    if (next) {
+      setTimeout(() => {
+        next.focus();
+        next.select();
+      }, 80);
+    }
+    return;
+  }
+
+  // Pemanah terakhir pada rambahan ini: jangan pindah otomatis ke
+  // rambahan berikutnya. Tetap di pemanah terakhir agar operator
+  // bisa memilih rambahan berikutnya secara manual.
 }
 
 function pindahInputScore(event, input) {
